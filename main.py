@@ -11,26 +11,26 @@ Main pipeline orchestrator — runs the full end-to-end workflow:
 import logging
 import sys
 
+from data_cleaning import clean
 from data_loading import download_and_load, show_churn_distribution
 from data_validation import run_all_validations
-from data_cleaning import clean
 from eda import run_full_eda
 from feature_engineering import (
-    encode,
     add_engineered_features,
-    plot_feature_engineering_charts,
-    split_and_encode,
     correlation_analysis,
-    spearman_feature_selection,
+    encode,
     pca_analysis,
     permutation_feature_importance,
+    plot_feature_engineering_charts,
+    spearman_feature_selection,
+    split_and_encode,
 )
 from modeling import (
-    setup_mlflow,
-    grid_search_all,
-    evaluate_models,
     cross_validate_best,
+    evaluate_models,
+    grid_search_all,
     save_outputs,
+    setup_mlflow,
 )
 
 logger = logging.getLogger(__name__)
@@ -102,8 +102,12 @@ def main():
     all_features = X_train.columns.tolist()
     pca_analysis(X_train, y_train, all_features)
     final_features = permutation_feature_importance(
-        X_train, X_test, y_train, y_test,
-        all_features, selected_features,
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+        all_features,
+        selected_features,
     )
 
     # ── 6. Modelling ───────────────────────────────────────────
@@ -118,7 +122,11 @@ def main():
 
     best_models = grid_search_all(X_train_final, y_train)
     results, results_df = evaluate_models(
-        best_models, X_train_final, X_test_final, y_train, y_test,
+        best_models,
+        X_train_final,
+        X_test_final,
+        y_train,
+        y_test,
         monthly_charges_test,
     )
 

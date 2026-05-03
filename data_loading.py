@@ -3,11 +3,13 @@ Download the Telco Customer Churn dataset from Kaggle and load it
 into a pandas DataFrame.
 """
 
-import os
 import logging
+import os
+
 import kagglehub
-import pandas as pd
 import matplotlib
+import pandas as pd
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

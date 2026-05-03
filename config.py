@@ -5,7 +5,7 @@ used across all pipeline modules.
 
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
-THRESHOLD = 0.55          # classification probability threshold
+THRESHOLD = 0.55  # classification probability threshold
 
 # ── Column groups ──────────────────────────────────────────────
 NUMERIC_COLS = ["tenure", "MonthlyCharges", "TotalCharges"]
@@ -13,15 +13,30 @@ NUMERIC_COLS = ["tenure", "MonthlyCharges", "TotalCharges"]
 BINARY_MAP = {"Yes": 1, "No": 0}
 
 CAT_COLS_TO_STRING = [
-    "customerID", "gender", "MultipleLines", "InternetService",
-    "OnlineSecurity", "OnlineBackup", "DeviceProtection",
-    "TechSupport", "StreamingTV", "StreamingMovies",
-    "Contract", "PaymentMethod", "PhoneService", "PaperlessBilling",
+    "customerID",
+    "gender",
+    "MultipleLines",
+    "InternetService",
+    "OnlineSecurity",
+    "OnlineBackup",
+    "DeviceProtection",
+    "TechSupport",
+    "StreamingTV",
+    "StreamingMovies",
+    "Contract",
+    "PaymentMethod",
+    "PhoneService",
+    "PaperlessBilling",
 ]
 
 TERNARY_COLS = [
-    "MultipleLines", "OnlineSecurity", "OnlineBackup",
-    "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies",
+    "MultipleLines",
+    "OnlineSecurity",
+    "OnlineBackup",
+    "DeviceProtection",
+    "TechSupport",
+    "StreamingTV",
+    "StreamingMovies",
 ]
 
 TERNARY_MAP = {
@@ -32,8 +47,12 @@ TERNARY_MAP = {
 }
 
 ADDON_COLS = [
-    "OnlineSecurity", "OnlineBackup", "DeviceProtection",
-    "TechSupport", "StreamingTV", "StreamingMovies",
+    "OnlineSecurity",
+    "OnlineBackup",
+    "DeviceProtection",
+    "TechSupport",
+    "StreamingTV",
+    "StreamingMovies",
 ]
 
 PROTECTION_COLS = ["OnlineSecurity", "OnlineBackup", "TechSupport"]
@@ -82,5 +101,5 @@ LGB_PARAM_GRID = {
 }
 
 # ── Business-metric assumptions ───────────────────────────────
-RETENTION_CAMPAIGN_COST = 50        # $ per retention outreach
-AVG_CUSTOMER_LIFETIME_MONTHS = 12   # expected months a retained customer stays
+RETENTION_CAMPAIGN_COST = 50  # $ per retention outreach
+AVG_CUSTOMER_LIFETIME_MONTHS = 12  # expected months a retained customer stays

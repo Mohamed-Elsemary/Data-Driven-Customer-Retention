@@ -4,11 +4,12 @@ duplicates, outlier detection, distribution profile, and
 relationship profiling.
 """
 
-import os
 import logging
-import pandas as pd
-import numpy as np
+import os
+
 import matplotlib
+import pandas as pd
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -49,12 +50,17 @@ def check_accuracy(df: pd.DataFrame) -> None:
     logger.info("-" * 60)
     logger.info("Service-related accuracy checks:")
     for col in [
-        "OnlineSecurity", "OnlineBackup", "DeviceProtection",
-        "TechSupport", "StreamingTV", "StreamingMovies",
+        "OnlineSecurity",
+        "OnlineBackup",
+        "DeviceProtection",
+        "TechSupport",
+        "StreamingTV",
+        "StreamingMovies",
     ]:
         logger.info(
             "%s invalid: %d",
-            col, df[~df[col].isin(["Yes", "No", "No internet service"])].shape[0],
+            col,
+            df[~df[col].isin(["Yes", "No", "No internet service"])].shape[0],
         )
 
     logger.info("-" * 60)
@@ -99,9 +105,7 @@ def check_consistency(df: pd.DataFrame) -> None:
     logger.info("InternetService vs add-ons inconsistencies: %d", n)
 
     # PhoneService vs MultipleLines
-    n2 = df[
-        (df["PhoneService"] == "No") & (df["MultipleLines"] != "No phone service")
-    ].shape[0]
+    n2 = df[(df["PhoneService"] == "No") & (df["MultipleLines"] != "No phone service")].shape[0]
     logger.info("PhoneService vs MultipleLines inconsistencies: %d", n2)
 
     # Reverse check
@@ -158,9 +162,7 @@ def detect_outliers(df: pd.DataFrame) -> None:
     IQR = Q3 - Q1
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
-    outliers = df[
-        (df["TotalCharges"] < lower_bound) | (df["TotalCharges"] > upper_bound)
-    ]
+    outliers = df[(df["TotalCharges"] < lower_bound) | (df["TotalCharges"] > upper_bound)]
     logger.info("Q1: %.2f, Q3: %.2f, IQR: %.2f", Q1, Q3, IQR)
     logger.info("lower_bound: %.2f", lower_bound)
     logger.info("upper_bound: %.2f", upper_bound)

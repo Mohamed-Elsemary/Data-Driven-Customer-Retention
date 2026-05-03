@@ -4,8 +4,10 @@ and categorical encoding.
 """
 
 import logging
+
 import pandas as pd
-from config import CAT_COLS_TO_STRING, BINARY_MAP, TERNARY_COLS, TERNARY_MAP
+
+from config import BINARY_MAP, CAT_COLS_TO_STRING
 
 logger = logging.getLogger(__name__)
 

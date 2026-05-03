@@ -1,8 +1,6 @@
 """Tests for data_cleaning.py — validates the clean() pipeline."""
 
 import pandas as pd
-import numpy as np
-import pytest
 
 
 class TestClean:
@@ -43,6 +41,4 @@ class TestClean:
 
         for col in CAT_COLS_TO_STRING:
             if col in cleaned_df.columns:
-                assert cleaned_df[col].dtype == "string", (
-                    f"{col} should be 'string' dtype"
-                )
+                assert cleaned_df[col].dtype == "string", f"{col} should be 'string' dtype"

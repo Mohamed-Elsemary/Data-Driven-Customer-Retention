@@ -4,27 +4,36 @@ cross-validated scoring, and MLflow experiment tracking.
 """
 
 import logging
-import numpy as np
-import pandas as pd
+
 import mlflow
 import mlflow.sklearn
-
-from sklearn.model_selection import GridSearchCV, StratifiedKFold
-from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score,
-    f1_score, roc_auc_score, confusion_matrix,
-)
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
+import numpy as np
+import pandas as pd
 from lightgbm import LGBMClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from sklearn.tree import DecisionTreeClassifier
+from xgboost import XGBClassifier
 
 from config import (
-    RANDOM_STATE, THRESHOLD,
-    LR_PARAM_GRID, DT_PARAM_GRID, RF_PARAM_GRID,
-    XGB_PARAM_GRID, LGB_PARAM_GRID,
-    RETENTION_CAMPAIGN_COST, AVG_CUSTOMER_LIFETIME_MONTHS,
+    AVG_CUSTOMER_LIFETIME_MONTHS,
+    DT_PARAM_GRID,
+    LGB_PARAM_GRID,
+    LR_PARAM_GRID,
+    RANDOM_STATE,
+    RETENTION_CAMPAIGN_COST,
+    RF_PARAM_GRID,
+    THRESHOLD,
+    XGB_PARAM_GRID,
 )
 
 logger = logging.getLogger(__name__)
@@ -81,6 +90,7 @@ def _compute_business_metrics(y_true, y_pred, monthly_charges):
 #  GRID SEARCH
 # ═══════════════════════════════════════════════════════════════
 
+
 def grid_search_all(X_train, y_train):
     """Run GridSearchCV for LR, DT, RF, XGB, and LightGBM. Return best estimators."""
     skf = _make_skf()
@@ -89,7 +99,9 @@ def grid_search_all(X_train, y_train):
     lr_grid = GridSearchCV(
         LogisticRegression(max_iter=1000, random_state=RANDOM_STATE, n_jobs=-1),
         param_grid=LR_PARAM_GRID,
-        scoring="f1", cv=skf, n_jobs=-1,
+        scoring="f1",
+        cv=skf,
+        n_jobs=-1,
     )
     lr_grid.fit(X_train, y_train)
 
@@ -97,7 +109,9 @@ def grid_search_all(X_train, y_train):
     dt_grid = GridSearchCV(
         DecisionTreeClassifier(random_state=RANDOM_STATE),
         param_grid=DT_PARAM_GRID,
-        scoring="f1", cv=skf, n_jobs=-1,
+        scoring="f1",
+        cv=skf,
+        n_jobs=-1,
     )
     dt_grid.fit(X_train, y_train)
 
@@ -105,7 +119,9 @@ def grid_search_all(X_train, y_train):
     rf_grid = GridSearchCV(
         RandomForestClassifier(random_state=RANDOM_STATE, n_jobs=-1),
         param_grid=RF_PARAM_GRID,
-        scoring="f1", cv=skf, n_jobs=-1,
+        scoring="f1",
+        cv=skf,
+        n_jobs=-1,
     )
     rf_grid.fit(X_train, y_train)
 
@@ -117,7 +133,9 @@ def grid_search_all(X_train, y_train):
             random_state=RANDOM_STATE,
         ),
         param_grid=XGB_PARAM_GRID,
-        scoring="f1", cv=skf, n_jobs=-1,
+        scoring="f1",
+        cv=skf,
+        n_jobs=-1,
     )
     xgb_grid.fit(X_train, y_train)
 
@@ -125,7 +143,9 @@ def grid_search_all(X_train, y_train):
     lgb_grid = GridSearchCV(
         LGBMClassifier(class_weight="balanced", random_state=RANDOM_STATE),
         param_grid=LGB_PARAM_GRID,
-        scoring="f1", cv=skf, n_jobs=-1,
+        scoring="f1",
+        cv=skf,
+        n_jobs=-1,
     )
     lgb_grid.fit(X_train, y_train)
 
@@ -138,8 +158,13 @@ def grid_search_all(X_train, y_train):
     }
 
     logger.info("Best parameters:")
-    for name, grid in [("LR", lr_grid), ("DT", dt_grid), ("RF", rf_grid),
-                        ("XGB", xgb_grid), ("LGB", lgb_grid)]:
+    for name, grid in [
+        ("LR", lr_grid),
+        ("DT", dt_grid),
+        ("RF", rf_grid),
+        ("XGB", xgb_grid),
+        ("LGB", lgb_grid),
+    ]:
         logger.info("  %s: %s", name, grid.best_params_)
 
     return best_models
@@ -149,8 +174,8 @@ def grid_search_all(X_train, y_train):
 #  EVALUATION  +  MLFLOW LOGGING
 # ═══════════════════════════════════════════════════════════════
 
-def evaluate_models(best_models, X_train, X_test, y_train, y_test,
-                    monthly_charges_test):
+
+def evaluate_models(best_models, X_train, X_test, y_train, y_test, monthly_charges_test):
     """Fit each model, evaluate on test set, and log everything to MLflow."""
     results = {}
 
@@ -169,30 +194,36 @@ def evaluate_models(best_models, X_train, X_test, y_train, y_test,
 
             # ── Standard metrics ───────────────────────────────
             standard = {
-                "Accuracy":  accuracy_score(y_test, preds),
+                "Accuracy": accuracy_score(y_test, preds),
                 "Precision": precision_score(y_test, preds),
-                "Recall":    recall_score(y_test, preds),
-                "F1":        f1_score(y_test, preds),
-                "ROC-AUC":   roc_auc_score(y_test, probs),
+                "Recall": recall_score(y_test, preds),
+                "F1": f1_score(y_test, preds),
+                "ROC-AUC": roc_auc_score(y_test, probs),
             }
-            mlflow.log_metrics({
-                "accuracy":  standard["Accuracy"],
-                "precision": standard["Precision"],
-                "recall":    standard["Recall"],
-                "f1":        standard["F1"],
-                "roc_auc":   standard["ROC-AUC"],
-            })
+            mlflow.log_metrics(
+                {
+                    "accuracy": standard["Accuracy"],
+                    "precision": standard["Precision"],
+                    "recall": standard["Recall"],
+                    "f1": standard["F1"],
+                    "roc_auc": standard["ROC-AUC"],
+                }
+            )
 
             # ── Business metrics ───────────────────────────────
             business = _compute_business_metrics(
-                y_test.values, preds, monthly_charges_test.values,
+                y_test.values,
+                preds,
+                monthly_charges_test.values,
             )
-            mlflow.log_metrics({
-                "revenue_saved":          business["Revenue_Saved"],
-                "net_retention_value":    business["Net_Retention_Value"],
-                "cost_per_detection":     business["Cost_Per_Detection"],
-                "revenue_leakage":        business["Revenue_Leakage"],
-            })
+            mlflow.log_metrics(
+                {
+                    "revenue_saved": business["Revenue_Saved"],
+                    "net_retention_value": business["Net_Retention_Value"],
+                    "cost_per_detection": business["Cost_Per_Detection"],
+                    "revenue_leakage": business["Revenue_Leakage"],
+                }
+            )
 
             # ── Save model artifact ────────────────────────────
             mlflow.sklearn.log_model(model, artifact_path="model")
@@ -208,6 +239,7 @@ def evaluate_models(best_models, X_train, X_test, y_train, y_test,
 # ═══════════════════════════════════════════════════════════════
 #  CROSS-VALIDATION WITH CUSTOM THRESHOLD
 # ═══════════════════════════════════════════════════════════════
+
 
 def cross_validate_best(model, X_train, y_train, threshold=THRESHOLD):
     """5-fold CV with a custom probability threshold."""
@@ -232,6 +264,7 @@ def cross_validate_best(model, X_train, y_train, threshold=THRESHOLD):
 # ═══════════════════════════════════════════════════════════════
 #  SAVE OUTPUTS
 # ═══════════════════════════════════════════════════════════════
+
 
 def save_outputs(df: pd.DataFrame, results: dict) -> None:
     """Save processed data and model results to CSV."""

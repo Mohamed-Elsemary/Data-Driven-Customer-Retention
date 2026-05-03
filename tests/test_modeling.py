@@ -1,8 +1,8 @@
 """Tests for modeling.py — business metrics and utility helpers."""
 
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
 
 class TestSanitizeParams:
@@ -10,11 +10,13 @@ class TestSanitizeParams:
 
     def test_converts_values_to_strings(self):
         from modeling import _sanitize_params
+
         result = _sanitize_params({"C": 0.1, "penalty": "l2"})
         assert all(isinstance(v, str) for v in result.values())
 
     def test_truncates_long_values(self):
         from modeling import _sanitize_params
+
         long_val = "x" * 500
         result = _sanitize_params({"key": long_val})
         assert len(result["key"]) <= 250
@@ -42,32 +44,38 @@ class TestComputeBusinessMetrics:
 
     def test_returns_all_keys(self, known_case):
         from modeling import _compute_business_metrics
+
         result = _compute_business_metrics(**known_case)
         expected_keys = {
-            "Revenue_Saved", "Net_Retention_Value",
-            "Cost_Per_Detection", "Revenue_Leakage",
+            "Revenue_Saved",
+            "Net_Retention_Value",
+            "Cost_Per_Detection",
+            "Revenue_Leakage",
         }
         assert set(result.keys()) == expected_keys
 
     def test_revenue_saved(self, known_case):
-        from modeling import _compute_business_metrics
         from config import AVG_CUSTOMER_LIFETIME_MONTHS
+        from modeling import _compute_business_metrics
+
         result = _compute_business_metrics(**known_case)
         # TP=2, avg_charge_tp=90
         expected = 2 * 90.0 * AVG_CUSTOMER_LIFETIME_MONTHS
         assert result["Revenue_Saved"] == round(expected, 2)
 
     def test_revenue_leakage(self, known_case):
-        from modeling import _compute_business_metrics
         from config import AVG_CUSTOMER_LIFETIME_MONTHS
+        from modeling import _compute_business_metrics
+
         result = _compute_business_metrics(**known_case)
         # FN=1, avg_charge_fn=60
         expected = 1 * 60.0 * AVG_CUSTOMER_LIFETIME_MONTHS
         assert result["Revenue_Leakage"] == round(expected, 2)
 
     def test_cost_per_detection(self, known_case):
-        from modeling import _compute_business_metrics
         from config import RETENTION_CAMPAIGN_COST
+        from modeling import _compute_business_metrics
+
         result = _compute_business_metrics(**known_case)
         # campaign_cost = (TP + FP) * cost = (2+1)*50 = 150
         # cost_per_detected = 150 / 2 = 75
@@ -79,8 +87,10 @@ class TestMakeSkf:
     """Verify the StratifiedKFold factory."""
 
     def test_returns_stratified_kfold(self):
-        from modeling import _make_skf
         from sklearn.model_selection import StratifiedKFold
+
+        from modeling import _make_skf
+
         skf = _make_skf()
         assert isinstance(skf, StratifiedKFold)
         assert skf.n_splits == 5

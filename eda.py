@@ -5,16 +5,18 @@ multivariate visualisations.
 All functions expect a *cleaned* DataFrame (after data_cleaning.clean).
 """
 
-import os
 import logging
-import pandas as pd
-import numpy as np
+import os
+
 import matplotlib
+import numpy as np
+import pandas as pd
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from config import NUMERIC_COLS, CHURN_PALETTE, CHURN_LABEL_PALETTE
+from config import CHURN_LABEL_PALETTE, CHURN_PALETTE, NUMERIC_COLS
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,7 @@ os.makedirs(PLOTS_DIR, exist_ok=True)
 # ═══════════════════════════════════════════════════════════════
 #  UNIVARIATE
 # ═══════════════════════════════════════════════════════════════
+
 
 def plot_numeric_distributions(df: pd.DataFrame) -> None:
     sns.set_theme(style="whitegrid", palette="muted")
@@ -46,8 +49,12 @@ def plot_numeric_distributions(df: pd.DataFrame) -> None:
 
 def plot_binary_distributions(df: pd.DataFrame) -> None:
     binary_cols = [
-        "SeniorCitizen", "PhoneService", "Partner",
-        "PaperlessBilling", "Dependents", "Churn",
+        "SeniorCitizen",
+        "PhoneService",
+        "Partner",
+        "PaperlessBilling",
+        "Dependents",
+        "Churn",
     ]
     fig, axes = plt.subplots(1, len(binary_cols), figsize=(14, 4))
     for i, col in enumerate(binary_cols):
@@ -57,8 +64,11 @@ def plot_binary_distributions(df: pd.DataFrame) -> None:
         axes[i].set_ylabel("Count")
         for j, v in enumerate(counts.values):
             axes[i].text(
-                j, v + 30, f"{v}\n({v / len(df) * 100:.1f}%)",
-                ha="center", fontsize=9,
+                j,
+                v + 30,
+                f"{v}\n({v / len(df) * 100:.1f}%)",
+                ha="center",
+                fontsize=9,
             )
     plt.tight_layout()
     plt.savefig(os.path.join(PLOTS_DIR, "univariate_binary.png"), dpi=120)
@@ -67,9 +77,17 @@ def plot_binary_distributions(df: pd.DataFrame) -> None:
 
 def plot_categorical_distributions(df: pd.DataFrame) -> None:
     cat_cols = [
-        "gender", "MultipleLines", "InternetService",
-        "OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport",
-        "StreamingTV", "StreamingMovies", "Contract", "PaymentMethod",
+        "gender",
+        "MultipleLines",
+        "InternetService",
+        "OnlineSecurity",
+        "OnlineBackup",
+        "DeviceProtection",
+        "TechSupport",
+        "StreamingTV",
+        "StreamingMovies",
+        "Contract",
+        "PaymentMethod",
     ]
     fig, axes = plt.subplots(4, 4, figsize=(20, 18))
     axes = axes.flatten()
@@ -91,13 +109,20 @@ def plot_categorical_distributions(df: pd.DataFrame) -> None:
 #  BIVARIATE
 # ═══════════════════════════════════════════════════════════════
 
+
 def plot_numeric_vs_churn(df: pd.DataFrame) -> None:
     fig, axes = plt.subplots(1, 3, figsize=(16, 4))
     for i, col in enumerate(NUMERIC_COLS):
         sns.stripplot(
-            data=df, x="Churn", y=col, hue="Churn",
-            palette=CHURN_PALETTE, ax=axes[i],
-            alpha=0.4, jitter=True, legend=False,
+            data=df,
+            x="Churn",
+            y=col,
+            hue="Churn",
+            palette=CHURN_PALETTE,
+            ax=axes[i],
+            alpha=0.4,
+            jitter=True,
+            legend=False,
         )
         axes[i].set_title(f"{col} by Churn")
     plt.tight_layout()
@@ -155,8 +180,10 @@ def plot_gender_churn(df: pd.DataFrame) -> None:
 
     gender_rate = df_plot.groupby("gender")["Churn"].mean() * 100
     axes[1].bar(
-        gender_rate.index, gender_rate.values,
-        color=["orchid", "steelblue"], edgecolor="white",
+        gender_rate.index,
+        gender_rate.values,
+        color=["orchid", "steelblue"],
+        edgecolor="white",
     )
     axes[1].set_title("Churn rate (%) by gender")
     axes[1].set_ylim(0, 40)
@@ -165,8 +192,10 @@ def plot_gender_churn(df: pd.DataFrame) -> None:
 
     gender_churn = df_plot.groupby(["gender", "Churn_label"]).size().unstack()
     gender_churn.plot(
-        kind="bar", ax=axes[0],
-        color=["steelblue", "coral"], edgecolor="white",
+        kind="bar",
+        ax=axes[0],
+        color=["steelblue", "coral"],
+        edgecolor="white",
     )
     axes[0].set_title("Gender vs Churn — counts")
     axes[0].set_xlabel("")
@@ -188,17 +217,24 @@ def plot_monthly_charges_churn(df: pd.DataFrame) -> None:
     fig.suptitle("Impact of Monthly Charges on Churn", fontsize=16, fontweight="bold")
 
     sns.kdeplot(
-        data=df_plot, x="MonthlyCharges", hue="Churn_label",
-        fill=True, palette=CHURN_LABEL_PALETTE,
-        ax=axes[0], common_norm=False,
+        data=df_plot,
+        x="MonthlyCharges",
+        hue="Churn_label",
+        fill=True,
+        palette=CHURN_LABEL_PALETTE,
+        ax=axes[0],
+        common_norm=False,
     )
     axes[0].set_title("Distribution of Monthly Charges")
     axes[0].set_xlabel("Monthly Charges ($)")
     axes[0].set_ylabel("Density")
 
     sns.boxplot(
-        data=df_plot, x="Churn_label", y="MonthlyCharges",
-        palette=CHURN_LABEL_PALETTE, ax=axes[1],
+        data=df_plot,
+        x="Churn_label",
+        y="MonthlyCharges",
+        palette=CHURN_LABEL_PALETTE,
+        ax=axes[1],
     )
     axes[1].set_title("Median & Spread of Monthly Charges")
     axes[1].set_xlabel("")
@@ -217,17 +253,24 @@ def plot_total_charges_churn(df: pd.DataFrame) -> None:
     fig.suptitle("Impact of Total Charges on Churn", fontsize=16, fontweight="bold")
 
     sns.kdeplot(
-        data=df_plot, x="TotalCharges", hue="Churn_label",
-        fill=True, palette=CHURN_LABEL_PALETTE,
-        ax=axes[0], common_norm=False,
+        data=df_plot,
+        x="TotalCharges",
+        hue="Churn_label",
+        fill=True,
+        palette=CHURN_LABEL_PALETTE,
+        ax=axes[0],
+        common_norm=False,
     )
     axes[0].set_title("Distribution of Total Charges")
     axes[0].set_xlabel("Total Charges ($)")
     axes[0].set_ylabel("Density")
 
     sns.boxplot(
-        data=df_plot, x="Churn_label", y="TotalCharges",
-        palette=CHURN_LABEL_PALETTE, ax=axes[1],
+        data=df_plot,
+        x="Churn_label",
+        y="TotalCharges",
+        palette=CHURN_LABEL_PALETTE,
+        ax=axes[1],
     )
     axes[1].set_title("Median & Spread of Total Charges")
     axes[1].set_xlabel("")
@@ -249,7 +292,8 @@ def plot_payment_method_churn(df: pd.DataFrame) -> None:
     pm_rate = pm_rate.sort_values(ascending=False)
 
     axes[0].bar(
-        pm_rate.index, pm_rate.values,
+        pm_rate.index,
+        pm_rate.values,
         color=["red", "steelblue", "steelblue", "steelblue"],
         edgecolor="white",
     )
@@ -262,8 +306,11 @@ def plot_payment_method_churn(df: pd.DataFrame) -> None:
     pm_churn = df_plot.groupby(["PaymentMethod", "Churn_label"]).size().unstack()
     pm_churn = pm_churn.loc[pm_rate.index]
     pm_churn.plot(
-        kind="bar", ax=axes[1],
-        color=["steelblue", "coral"], edgecolor="white", width=0.7,
+        kind="bar",
+        ax=axes[1],
+        color=["steelblue", "coral"],
+        edgecolor="white",
+        width=0.7,
     )
     axes[1].set_title("Payment Method vs Churn - Counts")
     axes[1].set_xlabel("")
@@ -285,12 +332,16 @@ def plot_addon_churn(df: pd.DataFrame) -> None:
     for ax, col in zip(axes.flatten(), addon_cols):
         churn_rate = df.groupby(col)["Churn"].mean() * 100
         x_labels = churn_rate.index.astype(str).tolist()
-        colors = ["#5b9bd5", "#e05c5c", "#f0a050"][:len(x_labels)]
+        colors = ["#5b9bd5", "#e05c5c", "#f0a050"][: len(x_labels)]
         bars = ax.bar(x_labels, churn_rate.values, color=colors, edgecolor="white", width=0.5)
         for bar, val in zip(bars, churn_rate.values):
             ax.text(
-                bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
-                f"{val:.1f}%", ha="center", fontsize=11, fontweight="bold",
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.5,
+                f"{val:.1f}%",
+                ha="center",
+                fontsize=11,
+                fontweight="bold",
             )
         ax.set_title(f"{col} vs Churn", fontsize=13)
         ax.set_ylabel("Churn Rate (%)")
@@ -307,20 +358,24 @@ def plot_streaming_churn(df: pd.DataFrame) -> None:
 
     churn_tv = df.groupby("StreamingTV")["Churn"].mean() * 100
     x_labels_tv = churn_tv.index.astype(str).tolist()
-    colors_tv = ["#5b9bd5", "#e05c5c", "#f0a050"][:len(x_labels_tv)]
+    colors_tv = ["#5b9bd5", "#e05c5c", "#f0a050"][: len(x_labels_tv)]
     bars_tv = axes[0].bar(x_labels_tv, churn_tv.values, color=colors_tv, width=0.5)
     for bar, v in zip(bars_tv, churn_tv.values):
-        axes[0].text(bar.get_x() + bar.get_width() / 2, v + 0.5, f"{v:.1f}%", ha="center", fontweight="bold")
+        axes[0].text(
+            bar.get_x() + bar.get_width() / 2, v + 0.5, f"{v:.1f}%", ha="center", fontweight="bold"
+        )
     axes[0].set_title("StreamingTV vs Churn")
     axes[0].set_ylabel("Churn Rate (%)")
     axes[0].set_ylim(0, 55)
 
     churn_mv = df.groupby("StreamingMovies")["Churn"].mean() * 100
     x_labels_mv = churn_mv.index.astype(str).tolist()
-    colors_mv = ["#5b9bd5", "#e05c5c", "#f0a050"][:len(x_labels_mv)]
+    colors_mv = ["#5b9bd5", "#e05c5c", "#f0a050"][: len(x_labels_mv)]
     bars_mv = axes[1].bar(x_labels_mv, churn_mv.values, color=colors_mv, width=0.5)
     for bar, v in zip(bars_mv, churn_mv.values):
-        axes[1].text(bar.get_x() + bar.get_width() / 2, v + 0.5, f"{v:.1f}%", ha="center", fontweight="bold")
+        axes[1].text(
+            bar.get_x() + bar.get_width() / 2, v + 0.5, f"{v:.1f}%", ha="center", fontweight="bold"
+        )
     axes[1].set_title("StreamingMovies vs Churn")
     axes[1].set_ylim(0, 55)
 
@@ -337,13 +392,19 @@ def plot_streaming_churn(df: pd.DataFrame) -> None:
 #  MULTIVARIATE
 # ═══════════════════════════════════════════════════════════════
 
+
 def plot_correlation_heatmaps(df: pd.DataFrame) -> None:
     df_plot = df.copy()
     df_plot["Churn_label"] = df_plot["Churn"].map({0: "No Churn", 1: "Churn"})
 
     num_bin_cols = [
-        "tenure", "MonthlyCharges", "TotalCharges",
-        "SeniorCitizen", "Partner", "Dependents", "Churn",
+        "tenure",
+        "MonthlyCharges",
+        "TotalCharges",
+        "SeniorCitizen",
+        "Partner",
+        "Dependents",
+        "Churn",
     ]
     fig, axes = plt.subplots(1, 2, figsize=(18, 7))
     mask = np.triu(np.ones(shape=(len(num_bin_cols), len(num_bin_cols)), dtype=bool))
@@ -351,9 +412,15 @@ def plot_correlation_heatmaps(df: pd.DataFrame) -> None:
     for ax, method in zip(axes, ["spearman", "pearson"]):
         corr = df_plot[num_bin_cols].corr(method=method)
         sns.heatmap(
-            corr, mask=mask, annot=True, fmt=".2f",
-            cmap="coolwarm", center=0,
-            square=True, linewidths=0.5, ax=ax,
+            corr,
+            mask=mask,
+            annot=True,
+            fmt=".2f",
+            cmap="coolwarm",
+            center=0,
+            square=True,
+            linewidths=0.5,
+            ax=ax,
         )
         ax.set_title(f"{method.capitalize()} correlation")
     plt.tight_layout()
@@ -412,7 +479,8 @@ def plot_pairplot(df: pd.DataFrame) -> None:
     pair_df = df[["tenure", "MonthlyCharges", "TotalCharges", "Churn"]].copy()
     pair_df["Churn"] = pair_df["Churn"].map({0: "No Churn", 1: "Churn"})
     g = sns.pairplot(
-        pair_df, hue="Churn",
+        pair_df,
+        hue="Churn",
         palette=CHURN_LABEL_PALETTE,
         plot_kws={"alpha": 0.3, "s": 10},
         diag_kind="kde",

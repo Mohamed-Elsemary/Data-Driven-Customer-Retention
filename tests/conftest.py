@@ -5,12 +5,11 @@ Adds the parent directory (code/) to sys.path so that pipeline modules
 can be imported the same way they import each other (flat imports).
 """
 
-import sys
 import os
+import sys
 
-import pytest
 import pandas as pd
-import numpy as np
+import pytest
 
 # ── Make pipeline modules importable ──────────────────────────
 CODE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,6 +20,7 @@ if CODE_DIR not in sys.path:
 # ═══════════════════════════════════════════════════════════════
 #  RAW DATAFRAME (mimics the Kaggle download)
 # ═══════════════════════════════════════════════════════════════
+
 
 @pytest.fixture
 def raw_df() -> pd.DataFrame:
@@ -34,40 +34,67 @@ def raw_df() -> pd.DataFrame:
         "tenure": [12, 0, 36, 48, 72],
         "PhoneService": ["Yes", "No", "Yes", "Yes", "Yes"],
         "MultipleLines": [
-            "No", "No phone service", "Yes",
-            "No", "Yes",
+            "No",
+            "No phone service",
+            "Yes",
+            "No",
+            "Yes",
         ],
         "InternetService": [
-            "Fiber optic", "DSL", "No",
-            "Fiber optic", "DSL",
+            "Fiber optic",
+            "DSL",
+            "No",
+            "Fiber optic",
+            "DSL",
         ],
         "OnlineSecurity": [
-            "No", "Yes", "No internet service",
-            "No", "Yes",
+            "No",
+            "Yes",
+            "No internet service",
+            "No",
+            "Yes",
         ],
         "OnlineBackup": [
-            "Yes", "No", "No internet service",
-            "No", "Yes",
+            "Yes",
+            "No",
+            "No internet service",
+            "No",
+            "Yes",
         ],
         "DeviceProtection": [
-            "No", "Yes", "No internet service",
-            "Yes", "No",
+            "No",
+            "Yes",
+            "No internet service",
+            "Yes",
+            "No",
         ],
         "TechSupport": [
-            "No", "No", "No internet service",
-            "Yes", "Yes",
+            "No",
+            "No",
+            "No internet service",
+            "Yes",
+            "Yes",
         ],
         "StreamingTV": [
-            "Yes", "No", "No internet service",
-            "Yes", "No",
+            "Yes",
+            "No",
+            "No internet service",
+            "Yes",
+            "No",
         ],
         "StreamingMovies": [
-            "No", "Yes", "No internet service",
-            "No", "Yes",
+            "No",
+            "Yes",
+            "No internet service",
+            "No",
+            "Yes",
         ],
         "Contract": [
-            "Month-to-month", "One year", "Two year",
-            "Month-to-month", "Two year",
+            "Month-to-month",
+            "One year",
+            "Two year",
+            "Month-to-month",
+            "Two year",
         ],
         "PaperlessBilling": ["Yes", "No", "No", "Yes", "No"],
         "PaymentMethod": [
@@ -88,8 +115,10 @@ def raw_df() -> pd.DataFrame:
 #  CLEANED DATAFRAME (after data_cleaning.clean)
 # ═══════════════════════════════════════════════════════════════
 
+
 @pytest.fixture
 def cleaned_df(raw_df):
     """Apply the real clean() function to the raw fixture."""
     from data_cleaning import clean
+
     return clean(raw_df)

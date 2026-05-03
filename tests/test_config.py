@@ -1,13 +1,23 @@
 """Tests for config.py — verifies that shared constants are sane."""
 
 import pytest
+
 from config import (
-    RANDOM_STATE, TEST_SIZE, THRESHOLD,
-    NUMERIC_COLS, BINARY_MAP, TERNARY_MAP,
-    CORR_DROP_THRESHOLD, PERM_STRONG_THRESHOLD,
-    LR_PARAM_GRID, DT_PARAM_GRID, RF_PARAM_GRID,
-    XGB_PARAM_GRID, LGB_PARAM_GRID,
-    RETENTION_CAMPAIGN_COST, AVG_CUSTOMER_LIFETIME_MONTHS,
+    AVG_CUSTOMER_LIFETIME_MONTHS,
+    BINARY_MAP,
+    CORR_DROP_THRESHOLD,
+    DT_PARAM_GRID,
+    LGB_PARAM_GRID,
+    LR_PARAM_GRID,
+    NUMERIC_COLS,
+    PERM_STRONG_THRESHOLD,
+    RANDOM_STATE,
+    RETENTION_CAMPAIGN_COST,
+    RF_PARAM_GRID,
+    TERNARY_MAP,
+    TEST_SIZE,
+    THRESHOLD,
+    XGB_PARAM_GRID,
 )
 
 
@@ -43,10 +53,16 @@ class TestConstants:
 class TestParamGrids:
     """Each grid must be a non-empty dict with list values."""
 
-    @pytest.mark.parametrize("grid", [
-        LR_PARAM_GRID, DT_PARAM_GRID, RF_PARAM_GRID,
-        XGB_PARAM_GRID, LGB_PARAM_GRID,
-    ])
+    @pytest.mark.parametrize(
+        "grid",
+        [
+            LR_PARAM_GRID,
+            DT_PARAM_GRID,
+            RF_PARAM_GRID,
+            XGB_PARAM_GRID,
+            LGB_PARAM_GRID,
+        ],
+    )
     def test_grid_is_dict_of_lists(self, grid):
         assert isinstance(grid, dict)
         assert len(grid) > 0
