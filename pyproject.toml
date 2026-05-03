@@ -1,0 +1,34 @@
+[project]
+name = "data-driven-customer-retention"
+version = "0.1.0"
+description = "End-to-end customer churn prediction pipeline with data validation, feature engineering, and ML model training."
+authors = [
+    {name = "Mohamed Elsemary"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+
+dependencies = [
+    "pandas>=2.2,<3.0",
+    "numpy>=1.26,<2.0",
+    "matplotlib>=3.8,<4.0",
+    "seaborn>=0.13,<1.0",
+    "scikit-learn>=1.8,<2.0",
+    "xgboost>=3.2,<4.0",
+    "lightgbm>=4.6,<5.0",
+    "mlflow>=3.10,<4.0",
+    "kagglehub>=0.3,<1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0,<10.0",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
