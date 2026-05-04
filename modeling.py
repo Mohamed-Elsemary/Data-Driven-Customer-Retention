@@ -38,7 +38,7 @@ def _make_skf():
 
 
 def setup_mlflow(experiment_name="Telco-Customer-Churn"):
-    #Initialise MLflow experiment (uses default ./mlruns store).
+    # Initialise MLflow experiment (uses default ./mlruns store).
     mlflow.set_experiment(experiment_name)
     logger.info("MLflow experiment : %s", experiment_name)
     logger.info("MLflow tracking URI: %s", mlflow.get_tracking_uri())
@@ -61,14 +61,10 @@ def _compute_business_metrics(y_true, y_pred, monthly_charges):
     # Business 1 — Revenue Saved: correctly-flagged churners × CLV
     revenue_saved = tp * avg_charge_tp * AVG_CUSTOMER_LIFETIME_MONTHS
 
-
     # Business 2 — Revenue Leakage: missed churners × CLV
     revenue_leakage = fn * avg_charge_fn * AVG_CUSTOMER_LIFETIME_MONTHS
 
-    return {
-        "Revenue_Saved": round(revenue_saved, 2),
-        "Revenue_Leakage": round(revenue_leakage, 2)
-    }
+    return {"Revenue_Saved": round(revenue_saved, 2), "Revenue_Leakage": round(revenue_leakage, 2)}
 
 
 #  GRID SEARCH
@@ -208,7 +204,7 @@ def evaluate_models(best_models, X_train, X_test, y_train, y_test, monthly_charg
 
 #  CROSS-VALIDATION WITH CUSTOM THRESHOLD
 def cross_validate_best(model, X_train, y_train, threshold=THRESHOLD):
-    #5-fold CV with a custom probability threshold.
+    # 5-fold CV with a custom probability threshold.
     skf = _make_skf()
     f1_scores, roc_scores = [], []
 

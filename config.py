@@ -7,7 +7,7 @@ RANDOM_STATE = 42
 TEST_SIZE = 0.2
 THRESHOLD = 0.55  # classification probability threshold
 
-# Column groups 
+# Column groups
 NUMERIC_COLS = ["tenure", "MonthlyCharges", "TotalCharges"]
 
 BINARY_MAP = {"Yes": 1, "No": 0}
@@ -65,7 +65,7 @@ CHURN_LABEL_PALETTE = {"No Churn": "steelblue", "Churn": "coral"}
 CORR_DROP_THRESHOLD = 0.85
 PERM_STRONG_THRESHOLD = 0.01
 
-# Grid-search parameter grids 
+# Grid-search parameter grids
 LR_PARAM_GRID = {
     "C": [0.01, 0.1, 1, 10],
     "penalty": ["l2"],
