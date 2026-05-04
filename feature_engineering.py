@@ -1,8 +1,3 @@
-"""
-Feature engineering: encoding, engineered features, correlation
-analysis, PCA, permutation importance, and final feature selection.
-"""
-
 import logging
 import os
 
@@ -35,13 +30,8 @@ PLOTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots")
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
 
-# ═══════════════════════════════════════════════════════════════
 #  ENCODING
-# ═══════════════════════════════════════════════════════════════
-
-
 def encode(df: pd.DataFrame) -> pd.DataFrame:
-    """Apply all encoding steps and drop customerID."""
     df = df.copy()
     df = df.drop(columns=["customerID"])
 
@@ -51,7 +41,7 @@ def encode(df: pd.DataFrame) -> pd.DataFrame:
     df["PaperlessBilling"] = df["PaperlessBilling"].map({"Yes": 1, "No": 0}).astype(int)
     assert df[["gender", "PhoneService", "PaperlessBilling"]].isnull().sum().sum() == 0
 
-    # Ternary → binary (collapse "No internet/phone service" into 0)
+    # Ternary --> binary (collapse "No internet/phone service" into 0)
     for col in TERNARY_COLS:
         df[col] = df[col].astype(str).map(TERNARY_MAP).astype(int)
     assert df[TERNARY_COLS].isnull().sum().sum() == 0
@@ -67,15 +57,9 @@ def encode(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# ═══════════════════════════════════════════════════════════════
 #  ENGINEERED FEATURES
-# ═══════════════════════════════════════════════════════════════
-
-
 def add_engineered_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Create all custom features. Expects an encoded DataFrame."""
     df = df.copy()
-
     # Feature 1: Total Add-On Services
     df["_Total_AddOns-Services"] = df[ADDON_COLS].sum(axis=1)
 
@@ -114,14 +98,8 @@ def add_engineered_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# ═══════════════════════════════════════════════════════════════
 #  FEATURE-ENGINEERING PLOTS
-# ═══════════════════════════════════════════════════════════════
-
-
 def plot_feature_engineering_charts(df: pd.DataFrame) -> None:
-    """Visualisations that accompany feature engineering."""
-
     # Total Add-Ons boxplot
     fig, ax = plt.subplots(figsize=(14, 6))
     fig.suptitle("Charge Per Service - Overpaying Signal", fontsize=16, fontweight="bold")
@@ -234,13 +212,8 @@ def plot_feature_engineering_charts(df: pd.DataFrame) -> None:
     logger.info("Feature-engineering plots saved to %s", PLOTS_DIR)
 
 
-# ═══════════════════════════════════════════════════════════════
 #  SPLIT & FREQUENCY ENCODE
-# ═══════════════════════════════════════════════════════════════
-
-
 def split_and_encode(df: pd.DataFrame):
-    """Train/test split + frequency encoding for Contract."""
     X = df.drop(columns=["Churn"])
     y = df["Churn"]
 
@@ -259,13 +232,9 @@ def split_and_encode(df: pd.DataFrame):
     return X_train, X_test, y_train, y_test
 
 
-# ═══════════════════════════════════════════════════════════════
+
 #  CORRELATION ANALYSIS & DROP
-# ═══════════════════════════════════════════════════════════════
-
-
 def correlation_analysis(X_train, y_train, X_test):
-    """Plot correlations, drop highly correlated features, return updated splits."""
     df_corr = X_train.copy()
     df_corr["Churn"] = y_train
 
@@ -303,13 +272,8 @@ def correlation_analysis(X_train, y_train, X_test):
     return X_train, X_test, df_corr
 
 
-# ═══════════════════════════════════════════════════════════════
 #  FEATURE SELECTION (Spearman + PCA + Permutation Importance)
-# ═══════════════════════════════════════════════════════════════
-
-
 def spearman_feature_selection(df_corr: pd.DataFrame):
-    """Return selected_features from Spearman correlation with Churn."""
     df_corr = pd.get_dummies(df_corr, drop_first=True)
     target_corr = df_corr.corr(method="spearman")["Churn"].sort_values(ascending=False)
     logger.info("Spearman correlations with Churn:\n%s", target_corr)
@@ -346,7 +310,6 @@ def spearman_feature_selection(df_corr: pd.DataFrame):
 
 
 def pca_analysis(X_train, y_train, all_features):
-    """Full PCA analysis with scree plot, 2-D scatter, and loadings."""
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X_train[all_features])
 
@@ -410,10 +373,7 @@ def pca_analysis(X_train, y_train, all_features):
     plt.close()
 
 
-def permutation_feature_importance(
-    X_train, X_test, y_train, y_test, all_features, selected_features
-):
-    """Run permutation importance and return final_features list."""
+def permutation_feature_importance(X_train, X_test, y_train, y_test, all_features, selected_features):
     rf = RandomForestClassifier(
         n_estimators=300,
         max_depth=10,
