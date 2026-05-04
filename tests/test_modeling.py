@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from config import AVG_CUSTOMER_LIFETIME_MONTHS, RETENTION_CAMPAIGN_COST
+from config import AVG_CUSTOMER_LIFETIME_MONTHS
 from modeling import _compute_business_metrics
 
 
@@ -40,26 +40,11 @@ class TestBusinessMetrics:
         expected = 1 * 60.0 * AVG_CUSTOMER_LIFETIME_MONTHS
         assert result["Revenue_Leakage"] == round(expected, 2)
 
-    def test_cost_per_detection(self, known_case):
-        result = _compute_business_metrics(**known_case)
-        # campaign_cost = (TP+FP) * cost = 3 * 50 = 150; per TP = 150/2
-        expected = (2 + 1) * RETENTION_CAMPAIGN_COST / 2
-        assert result["Cost_Per_Detection"] == round(expected, 2)
-
-    def test_net_retention_value(self, known_case):
-        """Net = Revenue_Saved - campaign_cost."""
-        result = _compute_business_metrics(**known_case)
-        revenue_saved = 2 * 90.0 * AVG_CUSTOMER_LIFETIME_MONTHS
-        campaign_cost = (2 + 1) * RETENTION_CAMPAIGN_COST
-        expected = revenue_saved - campaign_cost
-        assert result["Net_Retention_Value"] == round(expected, 2)
-
     def test_zero_true_positives(self):
-        """When TP=0, cost_per_detection should be 0 (guarded division)."""
+        """When TP=0, Revenue_Saved should be 0."""
         result = _compute_business_metrics(
             y_true=np.array([0, 0, 1]),
             y_pred=np.array([0, 0, 0]),
             monthly_charges=np.array([50.0, 60.0, 70.0]),
         )
-        assert result["Cost_Per_Detection"] == 0.0
         assert result["Revenue_Saved"] == 0.0

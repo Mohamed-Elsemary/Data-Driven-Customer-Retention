@@ -105,8 +105,6 @@ class TestBusinessMetricsIntegration:
 
         expected_keys = {
             "Revenue_Saved",
-            "Net_Retention_Value",
-            "Cost_Per_Detection",
             "Revenue_Leakage",
         }
         assert set(metrics.keys()) == expected_keys

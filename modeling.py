@@ -25,7 +25,6 @@ from config import (
     LGB_PARAM_GRID,
     LR_PARAM_GRID,
     RANDOM_STATE,
-    RETENTION_CAMPAIGN_COST,
     RF_PARAM_GRID,
     THRESHOLD,
     XGB_PARAM_GRID,
