@@ -1,5 +1,7 @@
 import logging
+
 import pandas as pd
+
 from config import BINARY_MAP, CAT_COLS_TO_STRING
 
 logger = logging.getLogger(__name__)
