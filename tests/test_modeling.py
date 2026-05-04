@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from config import AVG_CUSTOMER_LIFETIME_MONTHS, RETENTION_CAMPAIGN_COST
-from modeling import _compute_business_metrics, _sanitize_params
+from modeling import _compute_business_metrics
 
 
 class TestBusinessMetrics:

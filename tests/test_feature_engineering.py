@@ -2,10 +2,9 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from config import ADDON_COLS, TERNARY_COLS
-from feature_engineering import add_engineered_features, encode, split_and_encode
+from feature_engineering import encode, split_and_encode
 import feature_engineering
 
 
