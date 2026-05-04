@@ -1,135 +1,125 @@
-"""Tests for feature_engineering.py — encoding and engineered features."""
+"""Tests for feature_engineering.py — encoding, derived features, and split contracts."""
 
+import numpy as np
 import pandas as pd
 import pytest
 
+from config import ADDON_COLS, TERNARY_COLS
+from feature_engineering import add_engineered_features, encode, split_and_encode
+import feature_engineering
+
+
+# ═══════════════════════════════════════════════════════════════
+#  ENCODING CORRECTNESS
+# ═══════════════════════════════════════════════════════════════
+
 
 class TestEncode:
-    """Validate the encode() transformation."""
+    """Verify encode() produces correct values, not just correct types."""
 
-    def test_customer_id_dropped(self, cleaned_df):
-        from feature_engineering import encode
-
+    def test_gender_mapped_correctly(self, cleaned_df):
+        """Male → 1, Female → 0."""
         df = encode(cleaned_df)
-        assert "customerID" not in df.columns
+        raw_male_mask = cleaned_df["gender"].astype(str) == "Male"
+        assert (df.loc[raw_male_mask, "gender"] == 1).all()
+        assert (df.loc[~raw_male_mask, "gender"] == 0).all()
 
-    def test_gender_is_numeric(self, cleaned_df):
-        from feature_engineering import encode
-
-        df = encode(cleaned_df)
-        assert pd.api.types.is_numeric_dtype(df["gender"])
-
-    def test_phone_service_is_numeric(self, cleaned_df):
-        from feature_engineering import encode
-
-        df = encode(cleaned_df)
-        assert pd.api.types.is_numeric_dtype(df["PhoneService"])
-
-    def test_no_nulls_after_encode(self, cleaned_df):
-        from feature_engineering import encode
-
-        df = encode(cleaned_df)
-        assert df.isnull().sum().sum() == 0
-
-    def test_ternary_cols_are_binary(self, cleaned_df):
-        from config import TERNARY_COLS
-        from feature_engineering import encode
-
+    def test_ternary_cols_collapse_to_binary(self, cleaned_df):
+        """'No internet/phone service' must collapse to 0."""
         df = encode(cleaned_df)
         for col in TERNARY_COLS:
-            assert set(df[col].unique()).issubset({0, 1}), f"{col} should only have values 0 or 1"
+            assert set(df[col].unique()).issubset({0, 1}), f"{col} has values beyond 0/1"
 
-    def test_one_hot_columns_created(self, cleaned_df):
-        from feature_engineering import encode
+    def test_customer_id_dropped(self, encoded_df):
+        assert "customerID" not in encoded_df.columns
 
-        df = encode(cleaned_df)
-        # At least one InternetService one-hot column should exist
-        internet_cols = [c for c in df.columns if c.startswith("InternetService_")]
-        assert len(internet_cols) > 0, "InternetService one-hot columns missing"
+    def test_no_nulls_after_encode(self, encoded_df):
+        assert encoded_df.isnull().sum().sum() == 0
 
 
-class TestEngineeredFeatures:
-    """Validate add_engineered_features()."""
-
-    @pytest.fixture
-    def encoded_df(self, cleaned_df):
-        from feature_engineering import encode
-
-        return encode(cleaned_df)
-
-    def test_total_addons_created(self, encoded_df):
-        from feature_engineering import add_engineered_features
-
-        df = add_engineered_features(encoded_df)
-        assert "_Total_AddOns-Services" in df.columns
-
-    def test_cost_per_service_created(self, encoded_df):
-        from feature_engineering import add_engineered_features
-
-        df = add_engineered_features(encoded_df)
-        assert "_Cost_Per_Service" in df.columns
-
-    def test_is_autopay_created(self, encoded_df):
-        from feature_engineering import add_engineered_features
-
-        df = add_engineered_features(encoded_df)
-        assert "_Is_AutoPay" in df.columns
-        assert set(df["_Is_AutoPay"].unique()).issubset({0, 1})
-
-    def test_loyalty_score_binary(self, encoded_df):
-        from feature_engineering import add_engineered_features
-
-        df = add_engineered_features(encoded_df)
-        assert "_LoyaltyScore" in df.columns
-        assert set(df["_LoyaltyScore"].unique()).issubset({0, 1})
-
-    def test_high_friction_payment_created(self, encoded_df):
-        from feature_engineering import add_engineered_features
-
-        df = add_engineered_features(encoded_df)
-        assert "_HighFriction_Payment" in df.columns
-
-    def test_household_stability_range(self, encoded_df):
-        from feature_engineering import add_engineered_features
-
-        df = add_engineered_features(encoded_df)
-        assert "_Household_Stability" in df.columns
-        assert df["_Household_Stability"].min() >= 0
-        assert df["_Household_Stability"].max() <= 2
-
-    def test_helper_columns_dropped(self, encoded_df):
-        from feature_engineering import add_engineered_features
-
-        df = add_engineered_features(encoded_df)
-        assert "CoreServices_Count" not in df.columns
-        assert "True_Total_Services" not in df.columns
+# ═══════════════════════════════════════════════════════════════
+#  DERIVED FEATURE FORMULAS
+# ═══════════════════════════════════════════════════════════════
 
 
-class TestSplitAndEncode:
-    """Validate train/test split and frequency encoding."""
+class TestDerivedFeatures:
+    """Verify the math behind each engineered feature."""
 
-    @pytest.fixture
-    def full_encoded_df(self, cleaned_df):
-        from feature_engineering import add_engineered_features, encode
+    def test_total_addons_sum(self, encoded_df, featured_df):
+        """_Total_AddOns-Services = row-wise sum of ADDON_COLS."""
+        expected = encoded_df[ADDON_COLS].sum(axis=1).values
+        np.testing.assert_array_equal(featured_df["_Total_AddOns-Services"].values, expected)
 
-        df = encode(cleaned_df)
-        df = add_engineered_features(df)
-        return df
+    def test_cost_per_service_formula(self, encoded_df, featured_df):
+        """_Cost_Per_Service = MonthlyCharges / (core + addons)."""
+        core = encoded_df["PhoneService"] + (1 - encoded_df["InternetService_No"])
+        addons = encoded_df[ADDON_COLS].sum(axis=1)
+        expected = encoded_df["MonthlyCharges"] / (core + addons)
+        pd.testing.assert_series_equal(
+            featured_df["_Cost_Per_Service"].reset_index(drop=True),
+            expected.reset_index(drop=True),
+            check_names=False,
+        )
 
-    def test_split_shapes(self, full_encoded_df, monkeypatch):
-        import feature_engineering
+    def test_household_stability_formula(self, encoded_df, featured_df):
+        """_Household_Stability = Partner + Dependents."""
+        expected = encoded_df["Partner"] + encoded_df["Dependents"]
+        pd.testing.assert_series_equal(
+            featured_df["_Household_Stability"].reset_index(drop=True),
+            expected.reset_index(drop=True),
+            check_names=False,
+        )
 
-        monkeypatch.setattr(feature_engineering, "TEST_SIZE", 0.5)
+    def test_high_friction_formula(self, encoded_df, featured_df):
+        """_HighFriction_Payment = PaperlessBilling=1 AND ElectronicCheck=1."""
+        expected = (
+            (encoded_df["PaperlessBilling"] == 1)
+            & (encoded_df["PaymentMethod_Electronic check"] == 1)
+        ).astype(int)
+        pd.testing.assert_series_equal(
+            featured_df["_HighFriction_Payment"].reset_index(drop=True),
+            expected.reset_index(drop=True),
+            check_names=False,
+        )
 
-        X_train, X_test, y_train, y_test = feature_engineering.split_and_encode(full_encoded_df)
-        assert len(X_train) + len(X_test) == len(full_encoded_df)
-        assert len(y_train) + len(y_test) == len(full_encoded_df)
+    def test_helper_columns_dropped(self, featured_df):
+        """Temporary columns must not survive into the output."""
+        assert "CoreServices_Count" not in featured_df.columns
+        assert "True_Total_Services" not in featured_df.columns
 
-    def test_churn_not_in_features(self, full_encoded_df, monkeypatch):
-        import feature_engineering
 
-        monkeypatch.setattr(feature_engineering, "TEST_SIZE", 0.5)
+# ═══════════════════════════════════════════════════════════════
+#  SPLIT & LEAKAGE
+# ═══════════════════════════════════════════════════════════════
 
-        X_train, X_test, _, _ = feature_engineering.split_and_encode(full_encoded_df)
+
+class TestSplitContracts:
+    """Verify split_and_encode() preserves data integrity."""
+
+    def test_target_not_in_features(self, featured_df, monkeypatch):
+        """Churn must never appear in X_train or X_test."""
+        monkeypatch.setattr(feature_engineering, "TEST_SIZE", 0.3)
+        X_train, X_test, _, _ = split_and_encode(featured_df)
         assert "Churn" not in X_train.columns
         assert "Churn" not in X_test.columns
+
+    def test_train_test_columns_aligned(self, featured_df, monkeypatch):
+        """X_train and X_test must have identical column sets."""
+        monkeypatch.setattr(feature_engineering, "TEST_SIZE", 0.3)
+        X_train, X_test, _, _ = split_and_encode(featured_df)
+        assert list(X_train.columns) == list(X_test.columns)
+
+    def test_no_index_overlap(self, featured_df, monkeypatch):
+        """Train and test indices must not overlap."""
+        monkeypatch.setattr(feature_engineering, "TEST_SIZE", 0.3)
+        X_train, X_test, _, _ = split_and_encode(featured_df)
+        overlap = set(X_train.index) & set(X_test.index)
+        assert len(overlap) == 0, f"Train/test overlap: {overlap}"
+
+    def test_frequency_encoding_uses_train_only(self, featured_df, monkeypatch):
+        """Contract freq values in X_test must come from X_train distribution."""
+        monkeypatch.setattr(feature_engineering, "TEST_SIZE", 0.3)
+        X_train, X_test, _, _ = split_and_encode(featured_df)
+        train_vals = set(X_train["Contract"].unique())
+        for val in X_test["Contract"].unique():
+            assert val in train_vals, f"X_test Contract value {val} not in X_train freq map"
