@@ -13,9 +13,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ project-submission ]
+    branches: [ main ]
   pull_request:
-    branches: [ project-submission ]
+    branches: [ main ]
   workflow_dispatch:  # Allow manual trigger from GitHub UI
 
 jobs:

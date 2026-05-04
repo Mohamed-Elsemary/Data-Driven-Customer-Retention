@@ -22,24 +22,24 @@ help:
 	@echo ============================================================
 	@echo   Data-Driven Customer Retention — Makefile Targets
 	@echo ============================================================
-	@echo.
+	@echo
 	@echo   SETUP
 	@echo     make setup          Install all dependencies via Poetry
-	@echo.
+	@echo
 	@echo   CODE QUALITY
 	@echo     make format         Auto-format code with Black
 	@echo     make check          Check formatting without changes
 	@echo     make lint           Run Flake8 linter
 	@echo     make isort          Sort imports with isort
-	@echo.
+	@echo
 	@echo   TESTING
 	@echo     make test           Run full test suite (unit + integration)
 	@echo     make test-unit      Run unit tests only
 	@echo     make test-integration  Run integration tests only
-	@echo.
+	@echo
 	@echo   PIPELINE
 	@echo     make pipeline       Run the full ML pipeline (main.py)
-	@echo.
+	@echo
 	@echo   UTILITIES
 	@echo     make clean          Delete generated files (cache, plots, logs)
 	@echo     make all            Run everything: format, lint, test
