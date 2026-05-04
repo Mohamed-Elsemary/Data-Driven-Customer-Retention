@@ -1,119 +1,77 @@
 """
 Shared pytest fixtures for the Telco Customer Churn pipeline tests.
-
-Adds the parent directory (code/) to sys.path so that pipeline modules
-can be imported the same way they import each other (flat imports).
 """
-
-import os
-import sys
 
 import pandas as pd
 import pytest
 
-# ── Make pipeline modules importable ──────────────────────────
-CODE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if CODE_DIR not in sys.path:
-    sys.path.insert(0, CODE_DIR)
-
-
-# ═══════════════════════════════════════════════════════════════
-#  RAW DATAFRAME (mimics the Kaggle download)
-# ═══════════════════════════════════════════════════════════════
-
 
 @pytest.fixture
 def raw_df() -> pd.DataFrame:
-    """A small, realistic raw DataFrame matching the Telco schema."""
+    """A 10-row realistic DataFrame matching the Telco schema.
+    Large enough for meaningful train/test splits."""
     data = {
-        "customerID": ["0001-A", "0002-B", "0003-C", "0004-D", "0005-E"],
-        "gender": ["Male", "Female", "Male", "Female", "Male"],
-        "SeniorCitizen": [0, 1, 0, 0, 1],
-        "Partner": ["Yes", "No", "Yes", "No", "Yes"],
-        "Dependents": ["No", "No", "Yes", "No", "Yes"],
-        "tenure": [12, 0, 36, 48, 72],
-        "PhoneService": ["Yes", "No", "Yes", "Yes", "Yes"],
+        "customerID": [f"C-{i:04d}" for i in range(10)],
+        "gender": ["Male", "Female"] * 5,
+        "SeniorCitizen": [0, 1, 0, 0, 1, 0, 1, 0, 0, 1],
+        "Partner": ["Yes", "No", "Yes", "No", "Yes", "No", "Yes", "No", "Yes", "No"],
+        "Dependents": ["No", "No", "Yes", "No", "Yes", "No", "No", "Yes", "No", "Yes"],
+        "tenure": [12, 0, 36, 48, 72, 5, 24, 60, 3, 40],
+        "PhoneService": ["Yes", "No", "Yes", "Yes", "Yes", "No", "Yes", "Yes", "No", "Yes"],
         "MultipleLines": [
-            "No",
-            "No phone service",
-            "Yes",
-            "No",
-            "Yes",
+            "No", "No phone service", "Yes", "No", "Yes",
+            "No phone service", "No", "Yes", "No phone service", "No",
         ],
         "InternetService": [
-            "Fiber optic",
-            "DSL",
-            "No",
-            "Fiber optic",
-            "DSL",
+            "Fiber optic", "DSL", "No", "Fiber optic", "DSL",
+            "DSL", "Fiber optic", "No", "DSL", "Fiber optic",
         ],
         "OnlineSecurity": [
-            "No",
-            "Yes",
-            "No internet service",
-            "No",
-            "Yes",
+            "No", "Yes", "No internet service", "No", "Yes",
+            "No", "No", "No internet service", "Yes", "No",
         ],
         "OnlineBackup": [
-            "Yes",
-            "No",
-            "No internet service",
-            "No",
-            "Yes",
+            "Yes", "No", "No internet service", "No", "Yes",
+            "Yes", "No", "No internet service", "No", "Yes",
         ],
         "DeviceProtection": [
-            "No",
-            "Yes",
-            "No internet service",
-            "Yes",
-            "No",
+            "No", "Yes", "No internet service", "Yes", "No",
+            "No", "Yes", "No internet service", "No", "Yes",
         ],
         "TechSupport": [
-            "No",
-            "No",
-            "No internet service",
-            "Yes",
-            "Yes",
+            "No", "No", "No internet service", "Yes", "Yes",
+            "No", "No", "No internet service", "Yes", "No",
         ],
         "StreamingTV": [
-            "Yes",
-            "No",
-            "No internet service",
-            "Yes",
-            "No",
+            "Yes", "No", "No internet service", "Yes", "No",
+            "Yes", "No", "No internet service", "No", "Yes",
         ],
         "StreamingMovies": [
-            "No",
-            "Yes",
-            "No internet service",
-            "No",
-            "Yes",
+            "No", "Yes", "No internet service", "No", "Yes",
+            "No", "Yes", "No internet service", "Yes", "No",
         ],
         "Contract": [
-            "Month-to-month",
-            "One year",
-            "Two year",
-            "Month-to-month",
-            "Two year",
+            "Month-to-month", "One year", "Two year", "Month-to-month", "Two year",
+            "Month-to-month", "One year", "Two year", "Month-to-month", "One year",
         ],
-        "PaperlessBilling": ["Yes", "No", "No", "Yes", "No"],
+        "PaperlessBilling": [
+            "Yes", "No", "No", "Yes", "No",
+            "Yes", "No", "Yes", "No", "Yes",
+        ],
         "PaymentMethod": [
-            "Electronic check",
-            "Mailed check",
-            "Bank transfer (automatic)",
-            "Credit card (automatic)",
-            "Bank transfer (automatic)",
+            "Electronic check", "Mailed check", "Bank transfer (automatic)",
+            "Credit card (automatic)", "Bank transfer (automatic)",
+            "Electronic check", "Mailed check", "Bank transfer (automatic)",
+            "Credit card (automatic)", "Electronic check",
         ],
-        "MonthlyCharges": [70.35, 29.85, 20.05, 99.65, 45.25],
-        "TotalCharges": ["844.2", "0", "721.8", "4783.2", "3258"],
-        "Churn": ["Yes", "No", "No", "Yes", "No"],
+        "MonthlyCharges": [70.35, 29.85, 20.05, 99.65, 45.25, 55.10, 65.40, 19.95, 35.50, 89.90],
+        "TotalCharges": [
+            "844.2", "0", "721.8", "4783.2", "3258",
+            "275.5", "1569.6", "1197", "106.5", "3596",
+        ],
+        "Churn": ["Yes", "No", "No", "Yes", "No", "Yes", "No", "No", "Yes", "No"],
     }
     return pd.DataFrame(data)
-
-
-# ═══════════════════════════════════════════════════════════════
-#  CLEANED DATAFRAME (after data_cleaning.clean)
-# ═══════════════════════════════════════════════════════════════
 
 
 @pytest.fixture
@@ -122,3 +80,19 @@ def cleaned_df(raw_df):
     from data_cleaning import clean
 
     return clean(raw_df)
+
+
+@pytest.fixture
+def encoded_df(cleaned_df):
+    """Apply encode() to the cleaned fixture."""
+    from feature_engineering import encode
+
+    return encode(cleaned_df)
+
+
+@pytest.fixture
+def featured_df(encoded_df):
+    """Apply add_engineered_features() to the encoded fixture."""
+    from feature_engineering import add_engineered_features
+
+    return add_engineered_features(encoded_df)
