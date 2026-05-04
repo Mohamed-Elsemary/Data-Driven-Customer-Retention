@@ -186,8 +186,6 @@ def evaluate_models(best_models, X_train, X_test, y_train, y_test, monthly_charg
             mlflow.log_metrics(
                 {
                     "revenue_saved": business["Revenue_Saved"],
-                    "net_retention_value": business["Net_Retention_Value"],
-                    "cost_per_detection": business["Cost_Per_Detection"],
                     "revenue_leakage": business["Revenue_Leakage"],
                 }
             )
