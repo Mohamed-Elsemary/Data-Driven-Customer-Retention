@@ -1,8 +1,3 @@
-"""
-Model training: grid-search tuning, evaluation,
-cross-validated scoring, and MLflow experiment tracking.
-"""
-
 import logging
 
 import mlflow
@@ -44,19 +39,18 @@ def _make_skf():
 
 
 def setup_mlflow(experiment_name="Telco-Customer-Churn"):
-    """Initialise MLflow experiment (uses default ./mlruns store)."""
+    #Initialise MLflow experiment (uses default ./mlruns store).
     mlflow.set_experiment(experiment_name)
     logger.info("MLflow experiment : %s", experiment_name)
     logger.info("MLflow tracking URI: %s", mlflow.get_tracking_uri())
 
 
 def _sanitize_params(params: dict) -> dict:
-    """Convert model .get_params() to MLflow-safe flat strings."""
+    # Convert model .get_params() to MLflow-safe flat strings.
     return {k: str(v)[:250] for k, v in params.items()}
 
 
 def _compute_business_metrics(y_true, y_pred, monthly_charges):
-    """Compute business-oriented churn metrics from confusion matrix."""
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
 
     tp_mask = (y_true == 1) & (y_pred == 1)
@@ -68,31 +62,18 @@ def _compute_business_metrics(y_true, y_pred, monthly_charges):
     # Business 1 — Revenue Saved: correctly-flagged churners × CLV
     revenue_saved = tp * avg_charge_tp * AVG_CUSTOMER_LIFETIME_MONTHS
 
-    # Business 2 — Net Retention Value: revenue saved minus campaign spend
-    campaign_cost = (tp + fp) * RETENTION_CAMPAIGN_COST
-    net_retention_value = revenue_saved - campaign_cost
 
-    # Business 3 — Cost per True Churn Detected
-    cost_per_detected = campaign_cost / tp if tp > 0 else 0.0
-
-    # Business 4 — Revenue Leakage: missed churners × CLV
+    # Business 2 — Revenue Leakage: missed churners × CLV
     revenue_leakage = fn * avg_charge_fn * AVG_CUSTOMER_LIFETIME_MONTHS
 
     return {
         "Revenue_Saved": round(revenue_saved, 2),
-        "Net_Retention_Value": round(net_retention_value, 2),
-        "Cost_Per_Detection": round(cost_per_detected, 2),
-        "Revenue_Leakage": round(revenue_leakage, 2),
+        "Revenue_Leakage": round(revenue_leakage, 2)
     }
 
 
-# ═══════════════════════════════════════════════════════════════
 #  GRID SEARCH
-# ═══════════════════════════════════════════════════════════════
-
-
 def grid_search_all(X_train, y_train):
-    """Run GridSearchCV for LR, DT, RF, XGB, and LightGBM. Return best estimators."""
     skf = _make_skf()
 
     # Logistic Regression
@@ -170,29 +151,20 @@ def grid_search_all(X_train, y_train):
     return best_models
 
 
-# ═══════════════════════════════════════════════════════════════
 #  EVALUATION  +  MLFLOW LOGGING
-# ═══════════════════════════════════════════════════════════════
-
-
 def evaluate_models(best_models, X_train, X_test, y_train, y_test, monthly_charges_test):
-    """Fit each model, evaluate on test set, and log everything to MLflow."""
     results = {}
 
     for name, model in best_models.items():
         with mlflow.start_run(run_name=name):
-            # ── Tag ────────────────────────────────────────────
             mlflow.set_tag("model_name", name)
 
-            # ── Train & predict ────────────────────────────────
             model.fit(X_train, y_train)
             preds = model.predict(X_test)
             probs = model.predict_proba(X_test)[:, 1]
 
-            # ── Log hyper-parameters ───────────────────────────
             mlflow.log_params(_sanitize_params(model.get_params()))
 
-            # ── Standard metrics ───────────────────────────────
             standard = {
                 "Accuracy": accuracy_score(y_test, preds),
                 "Precision": precision_score(y_test, preds),
@@ -225,24 +197,19 @@ def evaluate_models(best_models, X_train, X_test, y_train, y_test, monthly_charg
                 }
             )
 
-            # ── Save model artifact ────────────────────────────
             mlflow.sklearn.log_model(model, artifact_path="model")
 
             results[name] = {**standard, **business}
-            logger.info("  ✓ %s logged to MLflow", name)
+            logger.info("  Done %s logged to MLflow", name)
 
     results_df = pd.DataFrame(results).T
     logger.info("\n%s", results_df.to_string())
     return results, results_df
 
 
-# ═══════════════════════════════════════════════════════════════
 #  CROSS-VALIDATION WITH CUSTOM THRESHOLD
-# ═══════════════════════════════════════════════════════════════
-
-
 def cross_validate_best(model, X_train, y_train, threshold=THRESHOLD):
-    """5-fold CV with a custom probability threshold."""
+    #5-fold CV with a custom probability threshold.
     skf = _make_skf()
     f1_scores, roc_scores = [], []
 
@@ -261,13 +228,8 @@ def cross_validate_best(model, X_train, y_train, threshold=THRESHOLD):
     logger.info("ROC mean: %.4f  std: %.4f", np.mean(roc_scores), np.std(roc_scores))
 
 
-# ═══════════════════════════════════════════════════════════════
 #  SAVE OUTPUTS
-# ═══════════════════════════════════════════════════════════════
-
-
 def save_outputs(df: pd.DataFrame, results: dict) -> None:
-    """Save processed data and model results to CSV."""
     df.to_csv("churn_data_processed.csv", index=False)
     results_df = pd.DataFrame(results).T.reset_index().rename(columns={"index": "Model"})
     results_df.to_csv("model_results.csv", index=False)

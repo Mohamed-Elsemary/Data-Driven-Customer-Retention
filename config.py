@@ -7,7 +7,7 @@ RANDOM_STATE = 42
 TEST_SIZE = 0.2
 THRESHOLD = 0.55  # classification probability threshold
 
-# ── Column groups ──────────────────────────────────────────────
+# Column groups 
 NUMERIC_COLS = ["tenure", "MonthlyCharges", "TotalCharges"]
 
 BINARY_MAP = {"Yes": 1, "No": 0}
@@ -57,15 +57,15 @@ ADDON_COLS = [
 
 PROTECTION_COLS = ["OnlineSecurity", "OnlineBackup", "TechSupport"]
 
-# ── Color palettes ─────────────────────────────────────────────
+# Color palettes
 CHURN_PALETTE = {0: "steelblue", 1: "coral"}
 CHURN_LABEL_PALETTE = {"No Churn": "steelblue", "Churn": "coral"}
 
-# ── Correlation / feature-selection thresholds ─────────────────
+# Correlation / feature-selection thresholds
 CORR_DROP_THRESHOLD = 0.85
 PERM_STRONG_THRESHOLD = 0.01
 
-# ── Grid-search parameter grids ───────────────────────────────
+# Grid-search parameter grids 
 LR_PARAM_GRID = {
     "C": [0.01, 0.1, 1, 10],
     "penalty": ["l2"],
@@ -100,6 +100,5 @@ LGB_PARAM_GRID = {
     "max_depth": [-1, 10, 15],
 }
 
-# ── Business-metric assumptions ───────────────────────────────
-RETENTION_CAMPAIGN_COST = 50  # $ per retention outreach
+# Business-metric assumptions
 AVG_CUSTOMER_LIFETIME_MONTHS = 12  # expected months a retained customer stays
