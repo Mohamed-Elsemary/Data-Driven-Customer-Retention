@@ -3,6 +3,7 @@ import os
 import matplotlib
 import pandas as pd
 import matplotlib.pyplot as plt
+
 matplotlib.use("Agg")
 
 logger = logging.getLogger(__name__)
@@ -75,6 +76,7 @@ def check_accuracy(df: pd.DataFrame) -> None:
 
 
 # Consistency
+
 
 def check_consistency(df: pd.DataFrame) -> None:
     # All customers with No internet service correctly have No internet service in

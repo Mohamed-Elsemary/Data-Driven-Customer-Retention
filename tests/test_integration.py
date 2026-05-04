@@ -62,9 +62,9 @@ class TestFullPipeline:
         X_train, X_test, _, _ = feature_engineering.split_and_encode(df)
 
         for col in X_train.columns:
-            assert pd.api.types.is_numeric_dtype(X_train[col]), (
-                f"X_train['{col}'] is {X_train[col].dtype}, not numeric"
-            )
+            assert pd.api.types.is_numeric_dtype(
+                X_train[col]
+            ), f"X_train['{col}'] is {X_train[col].dtype}, not numeric"
 
 
 class TestDeterminism:
@@ -82,12 +82,8 @@ class TestDeterminism:
         monkeypatch.setattr(feature_engineering, "TEST_SIZE", 0.3)
         X1, _, y1, _ = feature_engineering.split_and_encode(featured_df)
         X2, _, y2, _ = feature_engineering.split_and_encode(featured_df)
-        pd.testing.assert_frame_equal(
-            X1.reset_index(drop=True), X2.reset_index(drop=True)
-        )
-        pd.testing.assert_series_equal(
-            y1.reset_index(drop=True), y2.reset_index(drop=True)
-        )
+        pd.testing.assert_frame_equal(X1.reset_index(drop=True), X2.reset_index(drop=True))
+        pd.testing.assert_series_equal(y1.reset_index(drop=True), y2.reset_index(drop=True))
 
 
 class TestBusinessMetricsIntegration:
@@ -105,13 +101,13 @@ class TestBusinessMetricsIntegration:
         model.fit(X_train, y_train)
         preds = model.predict(X_test)
 
-        metrics = _compute_business_metrics(
-            y_test.values, preds, X_test["MonthlyCharges"].values
-        )
+        metrics = _compute_business_metrics(y_test.values, preds, X_test["MonthlyCharges"].values)
 
         expected_keys = {
-            "Revenue_Saved", "Net_Retention_Value",
-            "Cost_Per_Detection", "Revenue_Leakage",
+            "Revenue_Saved",
+            "Net_Retention_Value",
+            "Cost_Per_Detection",
+            "Revenue_Leakage",
         }
         assert set(metrics.keys()) == expected_keys
         for key, val in metrics.items():

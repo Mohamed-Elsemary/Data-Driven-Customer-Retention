@@ -4,6 +4,7 @@ import kagglehub
 import matplotlib
 import pandas as pd
 import matplotlib.pyplot as plt
+
 matplotlib.use("Agg")
 
 logger = logging.getLogger(__name__)
