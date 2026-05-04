@@ -342,7 +342,6 @@ def pca_analysis(X_train, y_train, all_features):
     plt.savefig(os.path.join(PLOTS_DIR, "fe_pca_scree.png"), dpi=120)
     plt.close()
 
-    # 2-D scatter
     pca_2d = PCA(n_components=2, random_state=RANDOM_STATE)
     X_pca_2d = pca_2d.fit_transform(X_scaled)
     plt.figure(figsize=(8, 6))
@@ -357,7 +356,7 @@ def pca_analysis(X_train, y_train, all_features):
     plt.savefig(os.path.join(PLOTS_DIR, "fe_pca_2d.png"), dpi=120)
     plt.close()
 
-    # Loadings heatmap
+    
     loadings = pd.DataFrame(
         pca_full.components_[:n_95],
         columns=all_features,
@@ -457,3 +456,4 @@ def permutation_feature_importance(
         logger.info("  %-50s  ROC-AUC = %.4f ± %.4f", label, scores.mean(), scores.std())
 
     return final_features
+
