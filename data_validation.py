@@ -11,7 +11,7 @@ PLOTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots")
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
 
-# Accuracy 
+# Accuracy
 def check_accuracy(df: pd.DataFrame) -> None:
     logger.info("Categorical Invalid Accuracy Check:")
     logger.info("Gender invalid: %d", df[~df["gender"].isin(["Male", "Female"])].shape[0])
@@ -61,7 +61,6 @@ def check_accuracy(df: pd.DataFrame) -> None:
     logger.info("Missing TotalCharges: %d", df["TotalCharges"].isna().sum())
     logger.info("Negative TotalCharges: %d", (df["TotalCharges"] < 0).sum())
 
-   
     logger.info("\ncustomerID format issues checks:")
     logger.info(
         "Invalid customerID format: %d",
@@ -75,9 +74,11 @@ def check_accuracy(df: pd.DataFrame) -> None:
     logger.info("All are new customers (tenure=0): %s", (missing_df["tenure"] == 0).all())
 
 
-# Consistency 
+# Consistency
+
 def check_consistency(df: pd.DataFrame) -> None:
-   # All customers with No internet service correctly have No internet service in all associated features, indicating strong internal consistency.
+    # All customers with No internet service correctly have No internet service in
+    # all associated features, indicating strong internal consistency.
     n = df[
         (df["InternetService"] == "No")
         & (
@@ -128,7 +129,7 @@ def check_completeness(df: pd.DataFrame) -> None:
     logger.info("Critical-column nulls:\n%s", df[critical_cols].isnull().sum())
 
 
-# Duplicates 
+# Duplicates
 def check_duplicates(df: pd.DataFrame) -> None:
     logger.info("Duplicate rows: %d", df.duplicated().sum())
     logger.info("Duplicate customerIDs: %d", df["customerID"].duplicated().sum())
@@ -193,4 +194,3 @@ def run_all_validations(df: pd.DataFrame) -> None:
     detect_outliers(df)
     distribution_profile(df)
     relationship_profile(df)
-

@@ -114,6 +114,7 @@ def plot_numeric_vs_churn(df: pd.DataFrame) -> None:
 
 def plot_tenure_churn(df: pd.DataFrame) -> None:
     tmp = df.copy()
+
     def categorize_tenure(t):
         if t <= 12:
             return "Under 1 year"
@@ -478,7 +479,7 @@ def plot_payment_contract_churn(df: pd.DataFrame) -> None:
     plt.close()
 
 
-# Run all EDA 
+# Run all EDA
 def run_full_eda(df: pd.DataFrame) -> None:
     """Execute every EDA visualisation."""
     logger.info("=" * 60)

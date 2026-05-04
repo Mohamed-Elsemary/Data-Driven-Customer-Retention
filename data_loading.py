@@ -8,6 +8,7 @@ matplotlib.use("Agg")
 
 logger = logging.getLogger(__name__)
 
+
 def download_and_load() -> pd.DataFrame:
     path = kagglehub.dataset_download("abbas829/telco-customer-churn-dataset")
     logger.info("Path to dataset files: %s", path)
@@ -20,6 +21,7 @@ def download_and_load() -> pd.DataFrame:
 
     df = pd.read_csv(full_csv_path)
     return df
+
 
 def show_churn_distribution(df: pd.DataFrame) -> None:
     """Quick bar chart of Churn vs No Churn — saved to plots/."""
