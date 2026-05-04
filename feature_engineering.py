@@ -232,7 +232,6 @@ def split_and_encode(df: pd.DataFrame):
     return X_train, X_test, y_train, y_test
 
 
-
 #  CORRELATION ANALYSIS & DROP
 def correlation_analysis(X_train, y_train, X_test):
     df_corr = X_train.copy()
@@ -373,7 +372,9 @@ def pca_analysis(X_train, y_train, all_features):
     plt.close()
 
 
-def permutation_feature_importance(X_train, X_test, y_train, y_test, all_features, selected_features):
+def permutation_feature_importance(
+    X_train, X_test, y_train, y_test, all_features, selected_features
+):
     rf = RandomForestClassifier(
         n_estimators=300,
         max_depth=10,
