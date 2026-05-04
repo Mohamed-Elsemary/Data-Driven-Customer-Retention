@@ -174,15 +174,11 @@ class TestDataLeakage:
         df = feature_engineering.encode(cleaned_df)
         df = feature_engineering.add_engineered_features(df)
 
-        # Compute what the *global* frequency map would look like
-        global_freq = df["Contract"].value_counts(normalize=True)
-
         X_train, X_test, _, _ = feature_engineering.split_and_encode(df)
 
         # The frequency-encoded values in X_train should match train
         # frequencies, NOT global frequencies.  If the pipeline used
         # global frequencies, this comparison would be equal.
-        train_freq = X_train["Contract"].value_counts(normalize=True)
 
         # At minimum, validate that the function is NOT using all data:
         # The actual freq values in X_test must be drawn from the

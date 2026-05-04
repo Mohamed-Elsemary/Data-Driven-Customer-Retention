@@ -1,7 +1,6 @@
 """Tests for modeling.py — business metrics and utility helpers."""
 
 import numpy as np
-import pandas as pd
 import pytest
 
 
