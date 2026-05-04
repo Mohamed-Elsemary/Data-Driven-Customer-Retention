@@ -1,17 +1,9 @@
-"""
-Data-quality checks: accuracy, consistency, completeness,
-duplicates, outlier detection, distribution profile, and
-relationship profiling.
-"""
-
 import logging
 import os
-
 import matplotlib
 import pandas as pd
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+matplotlib.use("Agg")
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +11,8 @@ PLOTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots")
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
 
-# ── Accuracy ───────────────────────────────────────────────────
+# Accuracy 
 def check_accuracy(df: pd.DataFrame) -> None:
-    """Validate categorical values are within expected domains and
-    numeric values are non-negative."""
     logger.info("Categorical Invalid Accuracy Check:")
     logger.info("Gender invalid: %d", df[~df["gender"].isin(["Male", "Female"])].shape[0])
     logger.info("SeniorCitizen invalid: %d", df[~df["SeniorCitizen"].isin([0, 1])].shape[0])
@@ -47,8 +37,7 @@ def check_accuracy(df: pd.DataFrame) -> None:
     )
     logger.info("Churn invalid: %d", df[~df["Churn"].isin(["Yes", "No"])].shape[0])
 
-    logger.info("-" * 60)
-    logger.info("Service-related accuracy checks:")
+    logger.info("\nService-related accuracy checks:")
     for col in [
         "OnlineSecurity",
         "OnlineBackup",
@@ -63,34 +52,32 @@ def check_accuracy(df: pd.DataFrame) -> None:
             df[~df[col].isin(["Yes", "No", "No internet service"])].shape[0],
         )
 
-    logger.info("-" * 60)
-    logger.info("Numeric accuracy checks:")
+    logger.info("\nNumeric accuracy checks:")
     logger.info("Negative tenure: %d", (df["tenure"] < 0).sum())
     logger.info("Negative MonthlyCharges: %d", (df["MonthlyCharges"] < 0).sum())
 
     df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
+
     logger.info("Missing TotalCharges: %d", df["TotalCharges"].isna().sum())
     logger.info("Negative TotalCharges: %d", (df["TotalCharges"] < 0).sum())
 
-    logger.info("-" * 60)
-    logger.info("customerID format issues checks:")
+   
+    logger.info("\ncustomerID format issues checks:")
     logger.info(
         "Invalid customerID format: %d",
         df[~df["customerID"].astype(str).str.match("^[0-9A-Za-z-]+$")].shape[0],
     )
 
-    # Inspect missing TotalCharges rows
+    # Inspect missing TotalCharges
     logger.info("Sample missing TotalCharges row:\n%s", df[df["TotalCharges"].isna()].head(1).T)
     missing_df = df[df["TotalCharges"].isna()]
     logger.info("Missing TotalCharges count: %d", len(missing_df))
     logger.info("All are new customers (tenure=0): %s", (missing_df["tenure"] == 0).all())
 
 
-# ── Consistency ────────────────────────────────────────────────
+# Consistency 
 def check_consistency(df: pd.DataFrame) -> None:
-    """Cross-field consistency checks."""
-    # Internet-dependent features must say "No internet service" when
-    # InternetService == "No"
+   # All customers with No internet service correctly have No internet service in all associated features, indicating strong internal consistency.
     n = df[
         (df["InternetService"] == "No")
         & (
@@ -102,6 +89,7 @@ def check_consistency(df: pd.DataFrame) -> None:
             | (df["StreamingMovies"] != "No internet service")
         )
     ].shape[0]
+
     logger.info("InternetService vs add-ons inconsistencies: %d", n)
 
     # PhoneService vs MultipleLines
@@ -123,10 +111,10 @@ def check_consistency(df: pd.DataFrame) -> None:
     logger.info("tenure > 0 with missing TotalCharges: %d", n4)
 
 
-# ── Completeness ───────────────────────────────────────────────
+# Completeness
 def check_completeness(df: pd.DataFrame) -> None:
-    """Report missing values."""
     logger.info("Missing values per column:\n%s", df.isnull().sum())
+
     logger.info(
         "Missing TotalCharges detail:\n%s",
         df[df["TotalCharges"].isna()][["tenure", "MonthlyCharges", "Contract", "Churn"]],
@@ -140,13 +128,13 @@ def check_completeness(df: pd.DataFrame) -> None:
     logger.info("Critical-column nulls:\n%s", df[critical_cols].isnull().sum())
 
 
-# ── Duplicates ─────────────────────────────────────────────────
+# Duplicates 
 def check_duplicates(df: pd.DataFrame) -> None:
     logger.info("Duplicate rows: %d", df.duplicated().sum())
     logger.info("Duplicate customerIDs: %d", df["customerID"].duplicated().sum())
 
 
-# ── Outlier Detection (IQR) ───────────────────────────────────
+# Outlier Detection
 def detect_outliers(df: pd.DataFrame) -> None:
     df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
 
@@ -169,7 +157,7 @@ def detect_outliers(df: pd.DataFrame) -> None:
     logger.info("Outliers found: %d", len(outliers))
 
 
-# ── Distribution Profile ──────────────────────────────────────
+# Distribution Profile
 def distribution_profile(df: pd.DataFrame) -> None:
     cols = ["tenure", "MonthlyCharges", "TotalCharges"]
     logger.info("--- DISTRIBUTION PROFILE ---")
@@ -178,7 +166,7 @@ def distribution_profile(df: pd.DataFrame) -> None:
     logger.info("Kurtosis:\n%s", df[cols].kurtosis())
 
 
-# ── Relationship Profile ──────────────────────────────────────
+# Relationship Profile
 def relationship_profile(df: pd.DataFrame) -> None:
     cols = ["tenure", "MonthlyCharges", "TotalCharges"]
     logger.info("Pearson Correlation:\n%s", df[cols].corr(method="pearson"))
@@ -197,9 +185,7 @@ def relationship_profile(df: pd.DataFrame) -> None:
     logger.info("Correlation matrix plot saved.")
 
 
-# ── Run all ────────────────────────────────────────────────────
 def run_all_validations(df: pd.DataFrame) -> None:
-    """Execute every validation step in order."""
     check_accuracy(df)
     check_consistency(df)
     check_completeness(df)
@@ -207,3 +193,4 @@ def run_all_validations(df: pd.DataFrame) -> None:
     detect_outliers(df)
     distribution_profile(df)
     relationship_profile(df)
+

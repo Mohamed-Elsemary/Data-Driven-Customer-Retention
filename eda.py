@@ -1,34 +1,20 @@
-"""
-Exploratory Data Analysis — univariate, bivariate, and
-multivariate visualisations.
-
-All functions expect a *cleaned* DataFrame (after data_cleaning.clean).
-"""
-
 import logging
 import os
-
 import matplotlib
 import numpy as np
 import pandas as pd
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
-
 from config import CHURN_LABEL_PALETTE, CHURN_PALETTE, NUMERIC_COLS
 
+matplotlib.use("Agg")
 logger = logging.getLogger(__name__)
 
 PLOTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots")
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
 
-# ═══════════════════════════════════════════════════════════════
 #  UNIVARIATE
-# ═══════════════════════════════════════════════════════════════
-
-
 def plot_numeric_distributions(df: pd.DataFrame) -> None:
     sns.set_theme(style="whitegrid", palette="muted")
     fig, axes = plt.subplots(len(NUMERIC_COLS), 2, figsize=(14, 4 * len(NUMERIC_COLS)))
@@ -105,11 +91,7 @@ def plot_categorical_distributions(df: pd.DataFrame) -> None:
     plt.close()
 
 
-# ═══════════════════════════════════════════════════════════════
 #  BIVARIATE
-# ═══════════════════════════════════════════════════════════════
-
-
 def plot_numeric_vs_churn(df: pd.DataFrame) -> None:
     fig, axes = plt.subplots(1, 3, figsize=(16, 4))
     for i, col in enumerate(NUMERIC_COLS):
@@ -131,9 +113,7 @@ def plot_numeric_vs_churn(df: pd.DataFrame) -> None:
 
 
 def plot_tenure_churn(df: pd.DataFrame) -> None:
-    """Tenure lifecycle churn analysis."""
     tmp = df.copy()
-
     def categorize_tenure(t):
         if t <= 12:
             return "Under 1 year"
@@ -388,11 +368,7 @@ def plot_streaming_churn(df: pd.DataFrame) -> None:
     plt.close()
 
 
-# ═══════════════════════════════════════════════════════════════
 #  MULTIVARIATE
-# ═══════════════════════════════════════════════════════════════
-
-
 def plot_correlation_heatmaps(df: pd.DataFrame) -> None:
     df_plot = df.copy()
     df_plot["Churn_label"] = df_plot["Churn"].map({0: "No Churn", 1: "Churn"})
@@ -502,7 +478,7 @@ def plot_payment_contract_churn(df: pd.DataFrame) -> None:
     plt.close()
 
 
-# ── Run all EDA ────────────────────────────────────────────────
+# Run all EDA 
 def run_full_eda(df: pd.DataFrame) -> None:
     """Execute every EDA visualisation."""
     logger.info("=" * 60)
