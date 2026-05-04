@@ -74,7 +74,6 @@ def raw_df() -> pd.DataFrame:
     return pd.DataFrame(data)
 
 
-
 @pytest.fixture
 def cleaned_df(raw_df):
     """Apply the real clean() function to the raw fixture."""
